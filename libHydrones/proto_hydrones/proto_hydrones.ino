@@ -183,28 +183,34 @@ String doBaroMeas(Adafruit_BMP085 BARO) {
   
   // Initialization
   unsigned long start = millis();
-  int nbMeas = 0;
   float meanTemperature = 0.0;
   float meanPressure = 0.0;
   float meanSeaLevelPressure = 0.0;
   float meanAltitude = 0.0;
   
-  // Do Measurements during 200 ms
-  while (millis() - start < 200) {
-    meanPressure += BARO.readPressure();
-    meanSeaLevelPressure += BARO.readSealevelPressure();
-    meanAltitude += BARO.readAltitude();
-    meanTemperature += BARO.readTemperature();
-    nbMeas += 1;
-    // read measurements every 10 ms
-    delay(10);
-  }
+  // Do  simple measurement
+  meanPressure = BARO.readPressure();
+  meanSeaLevelPressure = BARO.readSealevelPressure();
+  meanAltitude = BARO.readAltitude();
+  meanTemperature = BARO.readTemperature();
   
-  // Compute average values
-  meanPressure = meanPressure / nbMeas;
-  meanSeaLevelPressure = meanSeaLevelPressure / nbMeas;
-  meanAltitude = meanAltitude / nbMeas;
-  meanTemperature = meanTemperature / nbMeas;
+//  // Do Measurements during 20 ms
+//  int nbMeas = 0;
+//  while (millis() - start < 20) {
+//    meanPressure += BARO.readPressure();
+//    meanSeaLevelPressure += BARO.readSealevelPressure();
+//    meanAltitude += BARO.readAltitude();
+//    meanTemperature += BARO.readTemperature();
+//    nbMeas += 1;
+//    // read measurements every 10 ms
+//    delay(10);
+//  }
+//  
+//  // Compute average values
+//  meanPressure = meanPressure / nbMeas;
+//  meanSeaLevelPressure = meanSeaLevelPressure / nbMeas;
+//  meanAltitude = meanAltitude / nbMeas;
+//  meanTemperature = meanTemperature / nbMeas;
 
   // Send results on the usb serial port
   String baroBuffer = "baroMeas/"
@@ -216,15 +222,22 @@ String doBaroMeas(Adafruit_BMP085 BARO) {
 }
 
 
-// Do IMU measurement (pitch and roll)
+// Do IMU measurement (yaw, pitch and roll)
 // -----------------------------------
 String doIMUMeas(NAxisMotion IMU) {
   
   float pitchAngle = 0.0;
   float rollAngle = 0.0;
+  float yawAngle = 0.0;
+  float accelX = 0.0;
+  float accelY = 0.0;
+  float accelZ = 0.0;
   float linearAccelX = 0.0;
   float linearAccelY = 0.0;
   float linearAccelZ = 0.0;
+  float gravAccelX = 0.0;
+  float gravAccelY = 0.0;
+  float gravAccelZ = 0.0;
   
   // Update the Euler data into the object
   IMU.updateEuler();
@@ -232,23 +245,42 @@ String doIMUMeas(NAxisMotion IMU) {
   // Read Pitch and Roll angle measurements
   pitchAngle = IMU.readEulerPitch();
   rollAngle = IMU.readEulerRoll();
+  yawAngle = IMU.readEulerHeading();
   
   // Update Linear Acceleration data into the object
   IMU.updateAccel();
   IMU.updateLinearAccel();
+  IMU.updateGravAccel();
+  
+  // Read exxeleration in the 3 directions
+  accelX = IMU.readAccelX();
+  accelY = IMU.readAccelY();
+  accelZ = IMU.readAccelZ();
   
   // Read linear acceleration in the 3 directions
   linearAccelX = IMU.readLinearAccelX();
   linearAccelY = IMU.readLinearAccelY();
   linearAccelZ = IMU.readLinearAccelZ();
   
+  // Read gravity acceleration in the 3 directions
+  gravAccelX = IMU.readGravAccelX();
+  gravAccelY = IMU.readGravAccelY();
+  gravAccelZ = IMU.readGravAccelZ();
+  
   // Send results on the usb serial port
   String imuBuffer = "imuMeas/" 
                    + String(pitchAngle, DEC) 
                    + "/" + String(rollAngle, DEC)
+                   + "/" + String(yawAngle, DEC)
+                   + "/" + String(accelX, DEC)
+                   + "/" + String(accelY, DEC)
+                   + "/" + String(accelZ, DEC)
                    + "/" + String(linearAccelX, DEC)
                    + "/" + String(linearAccelY, DEC)
-                   + "/" + String(linearAccelZ, DEC);
+                   + "/" + String(linearAccelZ, DEC)
+                   + "/" + String(gravAccelX, DEC)
+                   + "/" + String(gravAccelY, DEC)
+                   + "/" + String(gravAccelZ, DEC);
   return imuBuffer;  
 }
 
@@ -280,14 +312,15 @@ void setup(){
   // Prepare for GPS
   GPS.begin(9600); // The AdaFruit GPS works at 9600bds
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update rate
+  GPS.sendCommand(PMTK_API_SET_FIX_CTL_5HZ); // 5 Hz fix update rate
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_10HZ); // 10 Hz update rate
   delay(1000);
   
   // Initialize I2C
   I2C.begin();
   
   // Initialize Barometer
-  BARO.begin();
+  BARO.begin(BMP085_ULTRALOWPOWER);
   
   // Initialize IMU sensor
   IMUsensor.initSensor();

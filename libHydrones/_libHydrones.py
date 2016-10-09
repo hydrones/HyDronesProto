@@ -98,13 +98,20 @@ class Hydrones(object):
         if "imuMeas" in imuOutput:
             pitchAngle = float(imuOutput.split('/')[1])
             rollAngle = float(imuOutput.split('/')[2])
-            linearAccelX = float(imuOutput.split('/')[3])
-            linearAccelY = float(imuOutput.split('/')[4])
-            linearAccelZ = float(imuOutput.split('/')[5])
-            imuMeas = {'PitchAngle': pitchAngle, 'RollAngle': rollAngle, 'LinearAccelX': linearAccelX, 'LinearAccelY': linearAccelY, 'LinearAccelZ': linearAccelZ}
+            yawAngle = float(imuOutput.split('/')[3])
+            accelX = float(imuOutput.split('/')[4])
+            accelY = float(imuOutput.split('/')[5])
+            accelZ = float(imuOutput.split('/')[6])
+            linearAccelX = float(imuOutput.split('/')[7])
+            linearAccelY = float(imuOutput.split('/')[8])
+            linearAccelZ = float(imuOutput.split('/')[9])
+            gravAccelX = float(imuOutput.split('/')[10])
+            gravAccelY = float(imuOutput.split('/')[11])
+            gravAccelZ = float(imuOutput.split('/')[12])
+            imuMeas = {'PitchAngle': pitchAngle, 'RollAngle': rollAngle, 'YawAngle': yawAngle, 'AccelX': accelX, 'AccelY': accelY, 'AccelZ': accelZ, 'LinearAccelX': linearAccelX, 'LinearAccelY': linearAccelY, 'LinearAccelZ': linearAccelZ, 'GravAccelX': gravAccelX, 'GravAccelY': gravAccelY, 'GravAccelZ': gravAccelZ}
             return imuMeas
         else:
-            imuMeas = {'PitchAngle': 99999.0, 'RollAngle': 99999.0, 'LinearAccelX': 99999.0, 'LinearAccelY': 99999.0, 'LinearAccelZ': 99999.0}
+            imuMeas = {'PitchAngle': 99999.0, 'RollAngle': 99999.0, 'YawAngle': 99999.0, 'AccelX': 99999.0, 'AccelY': 99999.0, 'AccelZ': 99999.0, 'LinearAccelX': 99999.0, 'LinearAccelY': 99999.0, 'LinearAccelZ': 99999.0, 'GravAccelX': 99999.0, 'GravAccelY': 99999.0, 'GravAccelZ': 99999.0}
             return imuMeas
 
     def doBaroMeas(self):
