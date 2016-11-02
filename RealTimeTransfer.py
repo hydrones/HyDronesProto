@@ -23,11 +23,15 @@ listFile = glob.glob('data/HD_*')
 listFile.sort()
 
 
+
 # Log file reading
 # ---------------- 
 listAlreadyTransfered = []
 nameLogFile = 'LogTransfer/logtransfer.txt'
 if os.path.isfile(nameLogFile):
+    if len(listFile) == 0:
+        os.remove(nameLogFile)
+        sys.exit(0)
     try:
         logFile = open(nameLogFile, 'r')
         for line in logFile:
@@ -50,7 +54,13 @@ if len(listFile2Transfer) != 0:
     ftpHyDrones.cwd('disk1/HyDrones')
     for f2tranfer in listFile2Transfer:
         f = open(f2tranfer, 'rb')
-        ftpHyDrones.storbinary('STOR ' + f2tranfer, f)
+        if '/' in f2tranfer:
+            nameF2Transfer = f2tranfer.split('/')[-1]
+        elif '\\' in f2tranfer:
+            nameF2Transfer = f2tranfer.split('\\')[-1]
+        else:
+            nameF2Transfer = f2tranfer
+        ftpHyDrones.storbinary('STOR ' + nameF2Transfer, f)
         f.close()
 
     # Update/Create the Log file
